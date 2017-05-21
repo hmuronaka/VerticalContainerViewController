@@ -1,12 +1,13 @@
 //
 //  AppDelegate.swift
-//  VerticalContainerViewController
+//  VerticalContainerViewControllerDemo
 //
 //  Created by Muronaka Hiroaki on 2017/05/21.
 //  Copyright © 2017年 Muronaka Hiroaki. All rights reserved.
 //
 
 import UIKit
+import VerticalContainerViewController
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -52,15 +53,17 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 extension AppDelegate: VerticalContainerViewControllerDataSource {
     
     func numberOfData(viewController: VerticalContainerViewController) -> Int {
-        return 3
+        return 10
     }
     
     func verticalViewController(_ viewController: VerticalContainerViewController, setupFor viewControlelr: UIViewController, at row: Int) {
+        let vc = viewControlelr as! SampleViewController
+        vc.titleLabel.text = "\(row + 1)"
     }
     
     func createPageViewController(viewController: VerticalContainerViewController) -> UIViewController {
         let vc = SampleViewController(nibName: "SampleViewController", bundle: nil)
-        vc.pageViewController = self.window!.rootViewController as! VerticalContainerViewController
+        vc.verticalContainerViewController = self.window!.rootViewController as! VerticalContainerViewController
         return vc
     }
 }

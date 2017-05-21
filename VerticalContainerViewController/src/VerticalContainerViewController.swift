@@ -30,11 +30,10 @@ public protocol VerticalContainerViewControlelrDelegate {
  */
 open class VerticalContainerViewController: UIViewController {
     
-    var dataSource: VerticalContainerViewControllerDataSource!
-    var delegate: VerticalContainerViewController?
+    public var dataSource: VerticalContainerViewControllerDataSource!
+    public var delegate: VerticalContainerViewController?
     
-    var transition = VerticalPagingTransition()
-    var currentPageViewController: UIViewController?
+    public fileprivate(set) var currentPageViewController: UIViewController?
     
     public fileprivate(set) var currentIndex:Int = 0
 
@@ -69,28 +68,31 @@ open class VerticalContainerViewController: UIViewController {
     }
     
     fileprivate func updateViewController(isUp: Bool = true) {
-        guard currentIndex < dataSource.numberOfData(viewController: self) else {
+        guard (isUp && currentIndex < dataSource.numberOfData(viewController: self)) ||
+              (!isUp && currentIndex > 0) else {
             return
         }
         
+        
         if let currentVC = currentPageViewController {
+            self.currentIndex += (isUp ? 1 : -1)
             self.currentPageViewController = dataSource.createPageViewController(viewController: self)
-            dataSource.verticalViewController(self, setupFor: self.currentPageViewController!, at: currentIndex)
             changePage(oldVC: currentVC,  newVC:self.currentPageViewController!, isUp: isUp)
+            DispatchQueue.main.async {
+                self.dataSource.verticalViewController(self, setupFor: self.currentPageViewController!, at: self.currentIndex)
+            }
         } else {
             self.currentPageViewController = dataSource.createPageViewController(viewController: self)
-            dataSource.verticalViewController(self, setupFor: self.currentPageViewController!, at: currentIndex)
             add(childViewController: self.currentPageViewController!)
+            DispatchQueue.main.async {
+                self.dataSource.verticalViewController(self, setupFor: self.currentPageViewController!, at: self.currentIndex)
+            }
         }
     }
     
     fileprivate func changePage(oldVC: UIViewController, newVC: UIViewController, isUp: Bool) {
-//        oldVC.beginAppearanceTransition(false, animated: true)
         oldVC.willMove(toParentViewController: nil)
-        
-//        newVC.beginAppearanceTransition(true, animated: true)
         self.addChildViewController(newVC)
-        
         
         let newVCTo: CGRect = oldVC.view.frame
         var newVCFrom: CGRect = oldVC.view.frame
@@ -129,13 +131,13 @@ open class VerticalContainerViewController: UIViewController {
     }
     
     fileprivate func add(childViewController: UIViewController) {
-//        childViewController.beginAppearanceTransition(true, animated: true)
+        childViewController.beginAppearanceTransition(true, animated: true)
         self.addChildViewController(childViewController)
         childViewController.view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         childViewController.view.frame = self.view.frame
         self.view.addSubview(childViewController.view)
         childViewController.didMove(toParentViewController: self)
-//        childViewController.endAppearanceTransition()
+        childViewController.endAppearanceTransition()
     }
 
 }
